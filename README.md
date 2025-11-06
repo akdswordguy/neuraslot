@@ -36,4 +36,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 =======
 # neurasort
 A software that will ease the scheduling sessions for the educational faculties. The software provide facilities like  lab exam time table creating ,finding conflicts, resolving conflicts , room allocation, etc.
->>>>>>> 5869863c69209407c9b4c29910ef0ee4ae435516
+
