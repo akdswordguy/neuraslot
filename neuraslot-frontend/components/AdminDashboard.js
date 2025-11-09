@@ -1,9 +1,20 @@
 // AdminDashboard.jsx
 import React, { useState } from 'react';
 import { Calendar, Users, BookOpen, Home, AlertCircle, Zap, Download, BarChart3 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+const ScheduleEditor = dynamic(() => import('./ScheduleEditor'), { ssr: false });
+const ScheduleManager = dynamic(() => import('./ScheduleManager'), { ssr: false });
+const FacultyManager = dynamic(() => import('./FacultyManager'), { ssr: false });
+const ExamSlotCreator = dynamic(() => import('./ExamSlotCreator'), { ssr: false });
 
 const AdminDashboard = () => {
   const [harmonyScore, setHarmonyScore] = useState(85);
+  const [showEditor, setShowEditor] = useState(false);
+  const [editorSchedule, setEditorSchedule] = useState(null);
+  const [showManager, setShowManager] = useState(false);
+  const [showFacultyManager, setShowFacultyManager] = useState(false);
+  const [showExamCreator, setShowExamCreator] = useState(false);
 
   const stats = [
     { label: 'Total Labs', value: '24', icon: Home, color: 'from-violet-500 to-purple-500', change: '+2' },
@@ -102,6 +113,34 @@ const AdminDashboard = () => {
         </div>
       </div>
 
+      {/* Schedule Editor Modal (lazy-loaded) */}
+      {showEditor && (
+        <ScheduleEditor
+          initialSchedule={editorSchedule}
+          onClose={() => setShowEditor(false)}
+          onSave={(arr) => {
+            try {
+              localStorage.setItem('generatedTimetable', JSON.stringify(arr));
+              setShowEditor(false);
+              // optional: small confirmation
+              alert('Timetable saved and published to students.');
+            } catch (err) {
+              console.error('Failed to save timetable', err);
+              alert('Failed to save timetable. See console for details.');
+            }
+          }}
+        />
+      )}
+      {showManager && (
+        <ScheduleManager onClose={() => setShowManager(false)} />
+      )}
+      {showFacultyManager && (
+        <FacultyManager onClose={() => setShowFacultyManager(false)} />
+      )}
+      {showExamCreator && (
+        <ExamSlotCreator onClose={() => setShowExamCreator(false)} />
+      )}
+
       {/* Stats Grid */}
       <div className="grid md:grid-cols-4 gap-6">
         {stats.map((stat, idx) => {
@@ -182,20 +221,28 @@ const AdminDashboard = () => {
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Actions</h3>
         <div className="grid md:grid-cols-3 gap-4">
-          <button className="p-6 bg-gradient-to-br from-violet-500 to-purple-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-violet-500/50 transition-all transform hover:scale-105">
+          <button
+            onClick={() => {
+              // Open the Timetable Manager modal (manage/create/edit multiple timetables)
+              setShowManager(true);
+            }}
+            className="p-6 bg-gradient-to-br from-violet-500 to-purple-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-violet-500/50 transition-all transform hover:scale-105"
+          >
             <Calendar className="w-8 h-8 mb-3" />
-            Generate New Schedule
+            Timetable Manager
           </button>
-          <button className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:scale-105">
+          <button onClick={() => setShowFacultyManager(true)} className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:scale-105">
             <Users className="w-8 h-8 mb-3" />
             Manage Labs & Faculty
           </button>
-          <button className="p-6 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-orange-500/50 transition-all transform hover:scale-105">
+          <button onClick={() => setShowExamCreator(true)} className="p-6 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-orange-500/50 transition-all transform hover:scale-105">
             <BookOpen className="w-8 h-8 mb-3" />
             Create Exam Slots
           </button>
         </div>
       </div>
+
+      
 
       {/* Export Options */}
       <div className="flex gap-4">

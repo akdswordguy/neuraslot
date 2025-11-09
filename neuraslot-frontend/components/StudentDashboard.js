@@ -1,17 +1,34 @@
 // StudentDashboard.jsx
-import React, { useState } from 'react';
+'use client';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Download, Bell, Users, Clock, MapPin, BookOpen, AlertCircle, Star, TrendingUp } from 'lucide-react';
 
 const StudentDashboard = () => {
   const [viewMode, setViewMode] = useState('week'); // 'week' or 'month'
 
-  const weeklyTimetable = [
+  const defaultTimetable = [
     { day: 'Monday', time: '09:00 AM', lab: 'Lab-A', subject: 'Data Structures Lab', faculty: 'Dr. Smith', duration: '2 hrs' },
     { day: 'Monday', time: '02:00 PM', lab: 'Lab-C', subject: 'Web Development Lab', faculty: 'Dr. Johnson', duration: '2 hrs' },
     { day: 'Wednesday', time: '11:00 AM', lab: 'Lab-B', subject: 'AI & ML Lab', faculty: 'Dr. Kumar', duration: '3 hrs' },
     { day: 'Thursday', time: '10:00 AM', lab: 'Lab-A', subject: 'Database Lab', faculty: 'Dr. Patel', duration: '2 hrs' },
     { day: 'Friday', time: '01:00 PM', lab: 'Lab-D', subject: 'Computer Networks Lab', faculty: 'Dr. Wilson', duration: '2 hrs' }
   ];
+
+  const [weeklyTimetable, setWeeklyTimetable] = useState(defaultTimetable);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('generatedTimetable');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setWeeklyTimetable(parsed);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to read generated timetable from localStorage', err);
+    }
+  }, []);
 
   const upcomingExams = [
     { date: 'Nov 15', day: 'Friday', subject: 'Data Structures Lab Exam', lab: 'Lab-A', time: '10:00 AM', duration: '3 hrs' },
