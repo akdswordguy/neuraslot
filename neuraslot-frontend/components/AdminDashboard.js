@@ -1,12 +1,13 @@
 // AdminDashboard.jsx
 import React, { useState } from 'react';
-import { Calendar, Users, BookOpen, Home, AlertCircle, Zap, Download, BarChart3 } from 'lucide-react';
+import { Calendar, Users, BookOpen, Home, AlertCircle, Zap, Download, BarChart3, Flame } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 const ScheduleEditor = dynamic(() => import('./ScheduleEditor'), { ssr: false });
 const ScheduleManager = dynamic(() => import('./ScheduleManager'), { ssr: false });
 const FacultyManager = dynamic(() => import('./FacultyManager'), { ssr: false });
 const ExamSlotCreator = dynamic(() => import('./ExamSlotCreator'), { ssr: false });
+const LabExamScheduler = dynamic(() => import('./LabExamScheduler'), { ssr: false });
 
 const AdminDashboard = () => {
   const [harmonyScore, setHarmonyScore] = useState(85);
@@ -15,6 +16,7 @@ const AdminDashboard = () => {
   const [showManager, setShowManager] = useState(false);
   const [showFacultyManager, setShowFacultyManager] = useState(false);
   const [showExamCreator, setShowExamCreator] = useState(false);
+  const [showLabExamScheduler, setShowLabExamScheduler] = useState(false);
 
   const stats = [
     { label: 'Total Labs', value: '24', icon: Home, color: 'from-violet-500 to-purple-500', change: '+2' },
@@ -37,7 +39,7 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8 text-black" style={{overflowY: 'auto', maxHeight: '100vh'}}>
       {/* Admin Header */}
       <div className="bg-gradient-to-br from-red-600 via-orange-600 to-yellow-600 rounded-3xl p-8 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-white/10 backdrop-blur-xl"></div>
@@ -48,70 +50,6 @@ const AdminDashboard = () => {
         <BarChart3 className="absolute right-8 bottom-8 w-32 h-32 text-white/10" />
       </div>
 
-      {/* Smart Harmony Engine */}
-      <div className="relative bg-gradient-to-br from-slate-900 via-violet-900 to-slate-900 rounded-3xl p-8 overflow-hidden border border-violet-500/30 shadow-2xl shadow-violet-500/20">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-violet-500 to-transparent"></div>
-          <div className="absolute bottom-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent"></div>
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Zap className="w-8 h-8 text-yellow-400 animate-pulse" />
-                <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-50"></div>
-              </div>
-              <h2 className="text-2xl font-bold text-white">Smart Harmony Engine™</h2>
-            </div>
-            <div className={`px-6 py-3 rounded-full font-bold text-lg ${
-              harmonyScore >= 80 
-                ? 'bg-green-500/20 text-green-400 shadow-lg shadow-green-500/50' 
-                : harmonyScore >= 60 
-                ? 'bg-yellow-500/20 text-yellow-400 shadow-lg shadow-yellow-500/50' 
-                : 'bg-red-500/20 text-red-400 shadow-lg shadow-red-500/50'
-            }`}>
-              {harmonyScore}% Balanced
-            </div>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 hover:bg-white/10 transition-all">
-              <p className="text-gray-400 text-sm mb-2">Lab Utilization</p>
-              <p className="text-3xl font-bold text-white mb-3">87%</p>
-              <div className="w-full bg-gray-700/50 rounded-full h-3">
-                <div className="bg-gradient-to-r from-violet-500 to-purple-500 h-3 rounded-full shadow-lg shadow-violet-500/50 transition-all" style={{ width: '87%' }}></div>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 hover:bg-white/10 transition-all">
-              <p className="text-gray-400 text-sm mb-2">Faculty Load Balance</p>
-              <p className="text-3xl font-bold text-white mb-3">72%</p>
-              <div className="w-full bg-gray-700/50 rounded-full h-3">
-                <div className="bg-gradient-to-r from-blue-500 to-cyan-500 h-3 rounded-full shadow-lg shadow-blue-500/50 transition-all" style={{ width: '72%' }}></div>
-              </div>
-            </div>
-            
-            <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-5 border border-white/10 hover:bg-white/10 transition-all">
-              <p className="text-gray-400 text-sm mb-2">Batch Coverage</p>
-              <p className="text-3xl font-bold text-white mb-3">94%</p>
-              <div className="w-full bg-gray-700/50 rounded-full h-3">
-                <div className="bg-gradient-to-r from-cyan-500 to-teal-500 h-3 rounded-full shadow-lg shadow-cyan-500/50 transition-all" style={{ width: '94%' }}></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex gap-4">
-            <button className="px-8 py-4 bg-gradient-to-r from-violet-600 via-blue-600 to-cyan-600 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-violet-500/50 transition-all transform hover:scale-105 flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              Auto-Optimize Schedule
-            </button>
-            <button className="px-8 py-4 bg-white/10 backdrop-blur-xl border border-white/20 text-white rounded-2xl font-semibold hover:bg-white/20 transition-all">
-              View Analytics
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Schedule Editor Modal (lazy-loaded) */}
       {showEditor && (
@@ -139,6 +77,9 @@ const AdminDashboard = () => {
       )}
       {showExamCreator && (
         <ExamSlotCreator onClose={() => setShowExamCreator(false)} />
+      )}
+      {showLabExamScheduler && (
+        <LabExamScheduler onClose={() => setShowLabExamScheduler(false)} />
       )}
 
       {/* Stats Grid */}
@@ -220,7 +161,7 @@ const AdminDashboard = () => {
       {/* Quick Actions */}
       <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Actions</h3>
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-4 gap-4">
           <button
             onClick={() => {
               // Open the Timetable Manager modal (manage/create/edit multiple timetables)
@@ -233,11 +174,12 @@ const AdminDashboard = () => {
           </button>
           <button onClick={() => setShowFacultyManager(true)} className="p-6 bg-gradient-to-br from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-blue-500/50 transition-all transform hover:scale-105">
             <Users className="w-8 h-8 mb-3" />
-            Manage Labs & Faculty
+            Manage Faculty
           </button>
-          <button onClick={() => setShowExamCreator(true)} className="p-6 bg-gradient-to-br from-orange-500 to-red-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-orange-500/50 transition-all transform hover:scale-105">
-            <BookOpen className="w-8 h-8 mb-3" />
-            Create Exam Slots
+          
+          <button onClick={() => setShowLabExamScheduler(true)} className="p-6 bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl font-semibold hover:shadow-2xl hover:shadow-pink-500/50 transition-all transform hover:scale-105">
+            <Flame className="w-8 h-8 mb-3" />
+            Schedule Lab Exams
           </button>
         </div>
       </div>

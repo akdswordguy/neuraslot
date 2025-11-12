@@ -24,14 +24,7 @@ const LoginPage = ({ onLogin }) => {
       desc: 'Manage schedules & availability',
       gradient: 'from-violet-500/20 to-purple-500/20'
     },
-    { 
-      id: 'student', 
-      name: 'Student', 
-      icon: Users, 
-      color: 'from-cyan-500 via-blue-500 to-violet-500', 
-      desc: 'View timetables & track progress',
-      gradient: 'from-cyan-500/20 to-blue-500/20'
-    }
+    
   ];
 
   const handleLogin = (e) => {
@@ -71,8 +64,7 @@ const LoginPage = ({ onLogin }) => {
               NeuraSlot
             </h1>
           </div>
-          <p className="text-gray-400 text-xl mb-2">AI-Powered Intelligent Scheduling Platform</p>
-          <p className="text-gray-500 text-sm">Revolutionizing lab management for educational institutions</p>
+         
         </div>
 
         {!selectedRole ? (
@@ -202,13 +194,7 @@ const LoginPage = ({ onLogin }) => {
               </div>
             </div>
 
-            {/* Demo Credentials */}
-            <div className="mt-6 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-              <p className="text-gray-400 text-sm text-center mb-2">Demo Credentials</p>
-              <p className="text-gray-500 text-xs text-center">
-                Use any username/password combination to login
-              </p>
-            </div>
+            
           </div>
         )}
 

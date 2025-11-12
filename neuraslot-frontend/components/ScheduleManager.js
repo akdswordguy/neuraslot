@@ -8,28 +8,91 @@ const ScheduleViewer = dynamic(() => import('./ScheduleViewer'), { ssr: false })
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const periodTimes = ['08:30 AM', '09:15 AM', '10:00 AM', '10:45 AM', '12:30 PM', '01:15 PM', '02:00 PM', '02:45 PM'];
 
-function generateDefaultForClass(className) {
-  const subjects = ['Data Structures Lab', 'Web Development Lab', 'AI & ML Lab', 'Database Lab', 'Computer Networks Lab', 'Operating Systems Lab'];
-  const labs = ['Lab-A', 'Lab-B', 'Lab-C', 'Lab-D', 'Lab-E', 'Lab-F'];
-  const faculties = ['Dr. Smith', 'Dr. Johnson', 'Dr. Kumar', 'Dr. Patel', 'Dr. Wilson', 'Dr. Rao'];
+// Custom timetable generator based on user requirements
+function generateCustomTimetableForClass(className) {
+  // Subjects
+  const subjects = ['Software', 'Deep Learning', 'Machine Learning', 'Maths', 'Environment', 'Computer Networks'];
+  // Lab subjects
+  const labSubjects = ['Software', 'Computer Networks', 'Machine Learning'];
+  // Only one lab room
+  const labRoom = 'Tejas lab';
+  // Number of periods per day
+  const periodsPerDay = 8;
+  // Number of days
+  const numDays = days.length;
 
-  const generated = [];
-  days.forEach((day, dIdx) => {
-    for (let p = 0; p < 8; p++) {
-      const subj = subjects[(dIdx * 8 + p) % subjects.length];
-      const lab = labs[(dIdx * 8 + p) % labs.length];
-      const faculty = faculties[(dIdx * 8 + p) % faculties.length];
-      generated.push({
-        day,
-        period: p + 1,
-        time: periodTimes[p],
-        lab,
-        subject: subj,
-        faculty,
-        duration: '1 hr'
-      });
+  // Track which lab subject has been assigned for this batch
+  let labAssigned = {};
+  labSubjects.forEach(subj => { labAssigned[subj] = false; });
+
+  // Randomize lab subject order for variety
+  const shuffledLabSubjects = [...labSubjects].sort(() => Math.random() - 0.5);
+
+  // Pick a random day and period for each lab subject (2 consecutive periods, only once per week)
+  let labPlacements = [];
+  shuffledLabSubjects.forEach((subj, idx) => {
+    let placed = false;
+    while (!placed) {
+      const dayIdx = Math.floor(Math.random() * numDays);
+      const periodIdx = Math.floor(Math.random() * (periodsPerDay - 1)); // ensure room for 2 consecutive
+      // Check for collision
+      if (!labPlacements.some(lp => lp.dayIdx === dayIdx && (Math.abs(lp.periodIdx - periodIdx) < 2))) {
+        labPlacements.push({ subj, dayIdx, periodIdx });
+        placed = true;
+      }
     }
   });
+
+  // For each day/period, fill timetable
+  const generated = [];
+  for (let dIdx = 0; dIdx < numDays; dIdx++) {
+    let dayLabs = labPlacements.filter(lp => lp.dayIdx === dIdx);
+    let labPeriods = dayLabs.map(lp => lp.periodIdx);
+    for (let p = 0; p < periodsPerDay; p++) {
+      // Check if this is a lab period
+      const labHere = dayLabs.find(lp => lp.periodIdx === p);
+      if (labHere) {
+        // Add lab for 2 consecutive periods
+        for (let k = 0; k < 2; k++) {
+          generated.push({
+            day: days[dIdx],
+            period: p + 1 + k,
+            time: periodTimes[p + k],
+            lab: labRoom,
+            subject: labHere.subj + ' Lab',
+            duration: '1 hr',
+          });
+        }
+        p++; // skip next period (already filled)
+        continue;
+      }
+      // Otherwise, fill with subject or free slot
+      // Exclude lab subjects for non-lab periods
+      const nonLabSubjects = subjects.filter(s => !labSubjects.includes(s));
+      // Randomly decide if this is a free period (20% chance)
+      if (Math.random() < 0.2) {
+        generated.push({
+          day: days[dIdx],
+          period: p + 1,
+          time: periodTimes[p],
+          lab: '',
+          subject: 'Free',
+          duration: '1 hr',
+        });
+      } else {
+        // Pick a random non-lab subject
+        const subj = nonLabSubjects[Math.floor(Math.random() * nonLabSubjects.length)];
+        generated.push({
+          day: days[dIdx],
+          period: p + 1,
+          time: periodTimes[p],
+          lab: '',
+          subject: subj,
+          duration: '1 hr',
+        });
+      }
+    }
+  }
   return generated;
 }
 
@@ -41,18 +104,10 @@ export default function ScheduleManager({ onClose }) {
   const [viewerData, setViewerData] = useState(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem('timetables');
-    if (raw) {
-      try {
-        setTimetables(JSON.parse(raw));
-        return;
-      } catch (e) {
-        console.error('Invalid timetables in storage', e);
-      }
-    }
-    // seed default classes S1 CSE A-D
+    // Always reseed timetables with new generator to clear old data
+    localStorage.removeItem('timetables');
     const classes = ['S1 CSE A', 'S1 CSE B', 'S1 CSE C', 'S1 CSE D'];
-    const seeded = classes.map(cls => ({ id: Date.now() + Math.random(), className: cls, timetable: generateDefaultForClass(cls), createdAt: new Date().toISOString() }));
+    const seeded = classes.map(cls => ({ id: Date.now() + Math.random(), className: cls, timetable: generateCustomTimetableForClass(cls), createdAt: new Date().toISOString() }));
     localStorage.setItem('timetables', JSON.stringify(seeded));
     setTimetables(seeded);
   }, []);
@@ -65,7 +120,7 @@ export default function ScheduleManager({ onClose }) {
   function handleCreate() {
     const className = prompt('Enter class name (e.g. S1 CSE A)');
     if (!className) return;
-    const newItem = { id: Date.now() + Math.random(), className, timetable: generateDefaultForClass(className), createdAt: new Date().toISOString() };
+    const newItem = { id: Date.now() + Math.random(), className, timetable: generateCustomTimetableForClass(className), createdAt: new Date().toISOString() };
     setEditorData(newItem);
     setShowEditor(true);
   }

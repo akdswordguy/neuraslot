@@ -6,7 +6,7 @@ import Layout from '@/components/Layout';
 import LoginPage from '@/components/LoginPage';
 import AdminDashboard from '@/components/AdminDashboard';
 import FacultyDashboard from '@/components/FacultyDashboard';
-import StudentDashboard from '@/components/StudentDashboard';
+
 
 export default function Page() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -29,7 +29,7 @@ export default function Page() {
     <Layout currentUser={currentUser} onLogout={handleLogout}>
       {currentUser === 'admin' && <AdminDashboard />}
       {currentUser === 'faculty' && <FacultyDashboard />}
-      {currentUser === 'student' && <StudentDashboard />}
+      
     </Layout>
   );
 }
