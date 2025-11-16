@@ -149,3 +149,15 @@ class Notification(models.Model):
     class Meta:
         db_table = "notification"
         managed = False
+
+
+class Activity(models.Model):
+    action = models.CharField(max_length=50)
+    entity = models.CharField(max_length=50)
+    description = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(Member, null=True, blank=True, on_delete=models.SET_NULL)
+
+    class Meta:
+        db_table = "scheduling_activity"
+        managed = False
