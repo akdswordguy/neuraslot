@@ -34,26 +34,22 @@ const Layout = ({ children, currentUser, onLogout }) => {
   const userInfo = {
     admin: { name: 'Admin User', email: 'admin@neuraslot.edu', avatar: '👤' },
     faculty: { name: 'Dr. Smith', email: 'smith@neuraslot.edu', avatar: '👨‍🏫' },
-    student: { name: 'John Doe', email: 'john.doe@neuraslot.edu', avatar: '👨‍🎓' }
+    
   };
 
   const navLinks = {
     admin: [
       { name: 'Dashboard', icon: Home, href: '#' },
-      { name: 'Analytics', icon: BarChart3, href: '#' },
+      
       { name: 'Schedule', icon: Calendar, href: '#' },
-      { name: 'Settings', icon: Settings, href: '#' }
+      
     ],
     faculty: [
       { name: 'Dashboard', icon: Home, href: '#' },
       { name: 'My Schedule', icon: Calendar, href: '#' },
-      { name: 'Profile', icon: User, href: '#' }
+     
     ],
-    student: [
-      { name: 'Dashboard', icon: Home, href: '#' },
-      { name: 'Timetable', icon: Calendar, href: '#' },
-      { name: 'Profile', icon: User, href: '#' }
-    ]
+    
   };
 
   return (
@@ -170,17 +166,7 @@ const Layout = ({ children, currentUser, onLogout }) => {
                         <p className="text-xs text-gray-500 dark:text-gray-400">{userInfo[currentUser]?.email}</p>
                       </div>
                     </div>
-                    <button className="w-full p-3 flex items-center gap-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl transition-all">
-                      <Settings className="w-4 h-4" />
-                      Settings
-                    </button>
-                    <button 
-                      onClick={onLogout}
-                      className="w-full p-3 flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all mt-2"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Logout
-                    </button>
+                    
                   </div>
                 )}
               </div>
