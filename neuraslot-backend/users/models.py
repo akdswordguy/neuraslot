@@ -11,7 +11,7 @@ class Member(models.Model):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     faculty_id_number = models.CharField(max_length=20, unique=True, blank=True, null=True)
-    department = models.CharField(max_length=100, blank=True, null=True)
+    subject_id = models.ForeignKey('scheduling.Subject', db_column='subject_id', on_delete=models.SET_NULL, blank=True, null=True)
     contact_number = models.CharField(max_length=20, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

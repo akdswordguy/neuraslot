@@ -16,10 +16,12 @@ class FacultyClassSerializer(serializers.ModelSerializer):
         model = FacultyClassAssign
         fields = '__all__'
 
+
 class TimetableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Timetable
-        fields = '__all__'
+        fields = ['id', 'klass', 'day_of_week', 'period_number', 'subject', 'is_lab']
+
 
 class SlotBookingRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,3 +42,4 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = '__all__'
+

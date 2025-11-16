@@ -9,7 +9,7 @@ class MemberSerializer(serializers.ModelSerializer):
             "id", "username", "email", "password",
             "first_name", "last_name",
             "is_staff", "is_superuser",
-            "faculty_id_number", "department", "contact_number",
+            "faculty_id_number", "subject_id", "contact_number",
             "created_at", "updated_at"
         ]
         extra_kwargs = {

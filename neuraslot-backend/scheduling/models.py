@@ -55,8 +55,7 @@ class Timetable(models.Model):
     day_of_week = models.PositiveSmallIntegerField()  # 1-7
     period_number = models.PositiveSmallIntegerField()
     subject = models.ForeignKey(Subject, null=True, blank=True, on_delete=models.SET_NULL)
-    faculty = models.ForeignKey(Member, db_column='faculty_id', null=True, blank=True, on_delete=models.SET_NULL)
-    is_lab = models.BooleanField(default=True)
+    is_lab = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -63,6 +63,7 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+APPEND_SLASH = False
 
 # Use your custom user model (we'll create it next)
 AUTH_USER_MODEL = 'accounts.User'

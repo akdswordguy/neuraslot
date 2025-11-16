@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Users, BookOpen, Home, AlertCircle, Zap, Download, BarChart3, Flame } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -21,8 +21,7 @@ const AdminDashboard = () => {
   const stats = [
     { label: 'Total Labs', value: '24', icon: Home, color: 'from-pink-400 to-rose-400', change: '+2' },
     { label: 'Active Faculty', value: '156', icon: Users, color: 'from-blue-300 to-purple-300', change: '+8' },
-    { label: 'Student Batches', value: '42', icon: BookOpen, color: 'from-purple-300 to-pink-300', change: '+5' },
-    { label: 'This Week', value: '328', icon: Calendar, color: 'from-rose-300 to-orange-300', change: '+12' }
+    { label: 'Free Slots', value: '328', icon: Calendar, color: 'from-rose-300 to-orange-300', change: '+12' }
   ];
 
   const conflicts = [
@@ -31,12 +30,17 @@ const AdminDashboard = () => {
     { id: 3, type: 'Equipment Issue', desc: 'Lab-7 GPU shortage for AI batch session', severity: 'low' }
   ];
 
-  const recentActivity = [
-    { action: 'Schedule Generated', time: '2 mins ago', user: 'System' },
-    { action: 'Lab-A Capacity Updated', time: '15 mins ago', user: 'Admin' },
-    { action: 'New Faculty Added', time: '1 hour ago', user: 'Admin' },
-    { action: 'Exam Slots Created', time: '2 hours ago', user: 'System' }
-  ];
+ 
+
+
+  const [recentActivity, setRecentActivity] = useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/scheduling/activity/")
+      .then(r => r.json())
+      .then(data => setRecentActivity(data))
+      .catch(() => console.error("Activity fetch failed"));
+  }, []);
 
   return (
     // Applied the new theme's base background and text colors
@@ -153,17 +157,19 @@ const AdminDashboard = () => {
         <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
           <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Recent Activity</h3>
           <div className="space-y-4">
-            {recentActivity.map((activity, idx) => (
-              <div key={idx} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all">
-                {/* Updated bullet color */}
-                <div className="w-2 h-2 bg-pink-500 rounded-full"></div>
+            {recentActivity.map((a) => (
+              <div key={a.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl">
+                <div className="w-2 h-2 rounded-full bg-pink-500"></div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 dark:text-white">{activity.action}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time} • by {activity.user}</p>
+                  <p className="font-semibold">{a.description}</p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(a.timestamp).toLocaleString()} • {a.user_name}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
+
         </div>
       </div>
 
