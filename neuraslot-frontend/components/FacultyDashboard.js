@@ -180,7 +180,46 @@ const FacultyDashboard = () => {
             </div>
           </div>
         </div>
-<div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+
+        {/* Availability Management */}
+        <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Available Slots</h3>
+          
+          <div className="space-y-4 mb-6">
+            {/* Updated internal card themes */}
+            <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-xl border border-pink-200 dark:border-pink-800">
+              <p className="font-semibold text-gray-900 dark:text-white mb-2">Current Status</p>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-green-600 dark:text-green-400 font-bold">Available</span>
+              </div>
+            </div>
+
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+              <p className="font-semibold text-gray-900 dark:text-white mb-2">Preferred Lab</p>
+              <p className="text-gray-600 dark:text-gray-400">Lab-A, Lab-C</p>
+            </div>
+
+            <div className="p-4 bg-rose-50 dark:bg-rose-900/20 rounded-xl border border-rose-200 dark:border-rose-800">
+              <p className="font-semibold text-gray-900 dark:text-white mb-2">Working Hours</p>
+              <p className="text-gray-600 dark:text-gray-400">9:00 AM - 5:00 PM</p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {/* Updated Button Theme */}
+            <button className="w-full p-4 bg-gradient-to-r from-pink-400 to-rose-400 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-pink-200/50 transition-all transform hover:scale-105">
+              Book Slot
+            </button>
+            
+          </div>
+        </div>
+      </div>
+
+      {/* Upcoming Exams & Notifications */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Upcoming Exams */}
+        <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
           <div className="flex items-center gap-2 mb-6">
             {/* Updated icon color */}
             <BookOpen className="w-6 h-6 text-rose-500" />
@@ -209,13 +248,6 @@ const FacultyDashboard = () => {
             ))}
           </div>
         </div>
-        
-      </div>
-
-      
-      
-        
-        
 
         {/* Notifications */}
         <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
@@ -241,7 +273,7 @@ const FacultyDashboard = () => {
           </div>
         </div>
       </div>
-    
+    </div>
   );
 };
 
