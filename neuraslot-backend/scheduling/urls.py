@@ -1,5 +1,23 @@
 from django.urls import path
-from .views import ClassListCreateView, ClassRetrieveUpdateDeleteView, ConflictListCreateView, FacultyClassAssignListCreateView, NotificationListCreateView, ScheduledEventListCreateView, SlotBookingRequestListCreateView, SubjectListCreateView, SubjectRetrieveUpdateDeleteView, TimetableListCreateView
+from rest_framework.routers import DefaultRouter
+from .views import (
+    ClassListCreateView,
+    ClassRetrieveUpdateDeleteView,
+    ConflictListCreateView,
+    FacultyClassAssignListCreateView,
+    NotificationListCreateView,
+    ScheduledEventListCreateView,  
+    SlotBookingRequestListCreateView,
+    SubjectListCreateView,
+    SubjectRetrieveUpdateDeleteView,
+    TimetableListCreateView,
+    ScheduledEventViewSet,
+    NotificationForRecipientListView,
+)
+
+
+router = DefaultRouter()
+router.register('scheduledevent', ScheduledEventViewSet, basename='scheduledevent')
 
 urlpatterns = [
     path('classes/', ClassListCreateView.as_view(), name='classes-list-create'),
@@ -12,4 +30,8 @@ urlpatterns = [
     path('scheduledevent/', ScheduledEventListCreateView.as_view(), name='scheduledevents-list-create'),
     path('conflict/', ConflictListCreateView.as_view(), name='conflicts-list-create'),
     path('notification/', NotificationListCreateView.as_view(), name='notifications-list-create'),
+    path('notification/for_recipient/', NotificationForRecipientListView.as_view(), name='notifications-for-recipient'),
+
 ]
+
+urlpatterns += router.urls
