@@ -10,12 +10,14 @@ import {
   Flame
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import AnimatedList from '../app/AnimatedList';
 
 const ScheduleEditor = dynamic(() => import('./ScheduleEditor'), { ssr: false });
 const ScheduleManager = dynamic(() => import('./ScheduleManager'), { ssr: false });
 const FacultyManager = dynamic(() => import('./FacultyManager'), { ssr: false });
 const ExamSlotCreator = dynamic(() => import('./ExamSlotCreator'), { ssr: false });
 const LabExamScheduler = dynamic(() => import('./LabExamScheduler'), { ssr: false });
+
 
 const AdminDashboard = () => {
   const [harmonyScore, setHarmonyScore] = useState(85); // still unused, but fine
@@ -281,28 +283,36 @@ const AdminDashboard = () => {
               No recent activity.
             </div>
           ) : (
-            <div className="space-y-4">
-              {recentActivity.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-slate-800 rounded-xl"
-                >
-                  <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-gray-900 dark:text-white">
-                      {a.description}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(a.timestamp).toLocaleString()} • {a.entity} • {a.action}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <>
+              {/** Create the formatted items here */}
+              {(() => {
+                const formattedItems = recentActivity.map(a => ({
+                  id: a.id,
+                  label: a.description || 'No description',
+                  timestamp: a.timestamp,
+                  entity: a.entity,
+                  action: a.action
+                }));
+
+                return (
+                  <AnimatedList
+                    items={formattedItems.map(item =>
+                      `${item.label}`
+                    )}
+                    onItemSelect={(label, index) => {
+                      const selected = formattedItems[index];
+                      console.log('Selected:', selected);
+                    }}
+                    showGradients={true}
+                    enableArrowNavigation={true}
+                    displayScrollbar={true}
+                  />
+                );
+              })()}
+            </>
           )}
         </div>
       </div>
-
       {/* Quick Actions */}
       <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
         <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
