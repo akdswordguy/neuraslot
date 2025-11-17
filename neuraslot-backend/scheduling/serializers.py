@@ -23,7 +23,7 @@ class FacultyClassSerializer(serializers.ModelSerializer):
 class TimetableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Timetable
-        fields = ['id', 'klass', 'day_of_week', 'period_number', 'subject', 'is_lab']
+        fields = '__all__'
 
 
 class SlotBookingRequestSerializer(serializers.ModelSerializer):

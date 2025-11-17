@@ -83,16 +83,45 @@ class TimetableViewSet(ModelViewSet):
         return Response(TimetableSerializer(rows, many=True).data)
 
     @action(detail=False, methods=['put'], url_path='bulk')
+    @action(detail=False, methods=['put'], url_path='bulk')
+    @action(detail=False, methods=['put'], url_path='bulk')
     def bulk_update(self, request):
-        ser = TimetableSerializer(data=request.data, many=True)
-        ser.is_valid(raise_exception=True)
+        data = request.data
+        if not isinstance(data, list) or len(data) == 0:
+            return Response({"error": "Expected a non-empty list"}, status=400)
 
-        klass = ser.validated_data[0]['klass']
-        Timetable.objects.filter(klass=klass).delete()
-        objs = ser.save()
+        klass_id = data[0].get("klass")
+        existing_rows = {f"{r.day_of_week}-{r.period_number}": r
+                        for r in Timetable.objects.filter(klass_id=klass_id)}
+        
+        to_create = []
+        to_update = []
 
-        log_activity("UPDATE", "Timetable", f"Timetable updated for class {klass}", request.user)
-        return Response(TimetableSerializer(objs, many=True).data)
+        for row in data:
+            key = f"{row['day_of_week']}-{row['period_number']}"
+            subject = row.get("subject") or None  # allow null
+            
+            if key in existing_rows:
+                obj = existing_rows[key]
+                obj.subject_id = subject
+                obj.is_lab = row.get("is_lab", False)
+                to_update.append(obj)
+            else:
+                to_create.append(Timetable(
+                    klass_id=klass_id,
+                    day_of_week=row["day_of_week"],
+                    period_number=row["period_number"],
+                    subject_id=subject,
+                    is_lab=row.get("is_lab", False)
+                ))
+
+        if to_update:
+            Timetable.objects.bulk_update(to_update, ["subject_id", "is_lab"])
+        if to_create:
+            Timetable.objects.bulk_create(to_create)
+
+        updated = Timetable.objects.filter(klass_id=klass_id).order_by("day_of_week", "period_number")
+        return Response(TimetableSerializer(updated, many=True).data)
 
 
 # Activity

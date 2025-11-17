@@ -96,20 +96,20 @@ export default function ScheduleManager({ onClose }) {
     const FREE_SUBJECT_ID =
       subjects.find(s => s.name.toLowerCase() === "free")?.id || null;
 
+    const classId = editorData.classId;
+
     const payload = updatedRows.map(r => ({
-      id: r.id || undefined,
-      klass: Number(r.klass),
-      day_of_week: Number(r.day),
-      period_number: Number(r.period),
-
-      subject: r.subjectId
-        ? Number(r.subjectId)
-        : FREE_SUBJECT_ID,
-
-      is_lab: Boolean(r.is_lab)
+      klass: classId,
+      day_of_week: r.day,
+      period_number: r.period,
+      subject:
+        r.subjectId !== null && r.subjectId !== ""
+          ? r.subjectId
+          : FREE_SUBJECT_ID,
+      is_lab: r.is_lab
     }));
 
-    console.log("Final payload sent:", payload);
+    console.log("Payload:", payload);
 
     const res = await fetch(api + "timetable/bulk/", {
       method: "PUT",
@@ -117,21 +117,22 @@ export default function ScheduleManager({ onClose }) {
       body: JSON.stringify(payload)
     });
 
-    const saved = await res.json();
     if (!res.ok) {
-      console.error(saved);
-      alert("Backend rejected payload. Check console.");
+      const error = await res.json();
+      console.error("Backend rejected payload:", error);
+      alert("❌ Timetable update failed! Check console.");
       return;
     }
 
-    const classId = saved[0].klass;
-    setTimetables({
-      ...timetables,
-      [classId]: saved.map(r => convertRow(r))
-    });
+    const saved = await res.json();
+    setTimetables(prev => ({
+      ...prev,
+      [classId]: saved.map(convertRow)
+    }));
 
     setShowEditor(false);
   }
+
 
 
 
