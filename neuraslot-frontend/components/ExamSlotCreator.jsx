@@ -108,34 +108,31 @@ export default function ExamSlotCreator({ onClose, apiBase = 'http://127.0.0.1:8
 
     setSaving(true);
     try {
-      const newSlots = [];
-      sections.forEach(sec => {
-        periods.forEach(p => {
-         newSlots.push({
-            date,
-            section: sec,
-            period: p,
-            day: dayNameFromDate(date),
-            subject: selectedSubjectId
-          });
+    const newSlots = [];
+
+    sections.forEach(sec => {
+      periods.forEach(p => {
+        newSlots.push({
+          date,
+          section: sec,
+          period: p,
+          day: dayNameFromDate(date),
+          subject: selectedLabSubject // must be a valid Subject.id
         });
       });
+    });
 
-      // POST to API
+    const response = await fetch(`${apiBase}exam/create/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        examSlots: newSlots,
+        detectedConflicts: conflicts
+      })
+    });
 
-      const token = localStorage.getItem("token");
 
-      const response = await fetch(`${apiBase}exam/create/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Token ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({
-          examSlots: newSlots,
-          detectedConflicts: conflicts
-        })
-      });
 
 
       if (!response.ok) throw new Error('Failed to save exam slots');
@@ -214,6 +211,9 @@ export default function ExamSlotCreator({ onClose, apiBase = 'http://127.0.0.1:8
           <h3 className="text-lg font-bold">Create Exam Slot</h3>
           <button onClick={onClose} className="p-2 rounded-full bg-white/10 hover:bg-white/20">Close</button>
         </div>
+        <div>
+      </div>
+
 
         <div className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {error && (

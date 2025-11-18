@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Class, Conflict, FacultyClassAssign, Notification, SlotBookingRequest, Subject, Timetable, Activity, ExamSlot
+from .models import Class, Conflict, FacultyClassAssign, Notification, Subject, Timetable, Activity, ExamSlot
 
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -25,11 +25,6 @@ class TimetableSerializer(serializers.ModelSerializer):
         model = Timetable
         fields = '__all__'
 
-
-class SlotBookingRequestSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SlotBookingRequest
-        fields = '__all__'
 
 
 class ConflictSerializer(serializers.ModelSerializer):
@@ -60,16 +55,17 @@ class ActivitySerializer(serializers.ModelSerializer):
         return "System"
     
 
-from .models import ExamSlot, Conflict
+class ExamSlotSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    section = serializers.CharField(max_length=50)
+    period = serializers.IntegerField(min_value=1, max_value=8)
+    day = serializers.CharField(max_length=20)
+    subject = serializers.IntegerField()
 
-
-class ExamSlotSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ExamSlot
-        fields = "__all__"
-
-
-class ConflictSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Conflict
-        fields = "__all__"
+class ExamSlotCreateSerializer(serializers.Serializer):
+    examSlots = ExamSlotSerializer(many=True)
+    detectedConflicts = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True
+    )

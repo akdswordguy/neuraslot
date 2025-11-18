@@ -189,56 +189,62 @@ export default function ExamSlotCreator({ onClose, apiBase = 'http://127.0.0.1:8
     setSlotRecommendations({ bestSlot, bestAltSlots });
   }, [date, selectedLabSubject, sections, periods, timetables, subjects]);
 
-async function saveExamSlots() {
-  if (!date || sections.length === 0 || periods.length === 0 || !selectedLabSubject) {
-    alert('Please select date, lab subject, sections and period(s)');
-    return;
-  }
-  setSaving(true);
-  try {
-    const newSlots = [];
-    sections.forEach(sec => {
-      periods.forEach(p => {
-        newSlots.push({
-          date,           // YYYY-MM-DD format
-          section: sec,   // Section name as string
-          period: p,      // Period number as integer
-          day: dayNameFromDate(date),  // Day name string
-          subject: selectedLabSubject  // Subject ID as integer
-          // Remove createdAt, id - backend doesn't expect these
-        });
-      });
-    });
-
-    const response = await fetch(`${apiBase}exam/create/`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        examSlots: newSlots, 
-        detectedConflicts: conflicts 
-      })
-    });
-
-    const responseData = await response.json();
-    
-    if (!response.ok) {
-      console.error('Response:', responseData);
-      throw new Error(JSON.stringify(responseData.errors || 'Failed to save exam slots'));
+  async function saveExamSlots() {
+    if (!date || sections.length === 0 || periods.length === 0 || !selectedLabSubject) {
+      alert('Please select date, lab subject, sections and period(s)');
+      return;
     }
 
-    alert(`Exam slots created successfully! Created: ${responseData.created}`);
-    setDate('');
-    setSections([]);
-    setPeriods([]);
-    setSelectedLabSubject(null);
-    onClose();
-  } catch (err) {
-    console.error('Save error:', err);
-    alert(`Failed to save exam slots: ${err.message}`);
-  } finally {
-    setSaving(false);
+    setSaving(true);
+
+    try {
+      const newSlots = [];
+
+      sections.forEach(sec => {
+        periods.forEach(p => {
+          newSlots.push({
+            date,
+            section: sec,
+            period: p,
+            day: dayNameFromDate(date),
+            subject: selectedLabSubject
+          });
+        });
+      });
+
+      const response = await fetch(`${apiBase}exam/create/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        credentials: "include", // 🔥 Session cookie authentication
+        body: JSON.stringify({
+          examSlots: newSlots,
+          detectedConflicts: conflicts
+        })
+      });
+
+      const responseData = await response.json();
+      if (!response.ok) {
+        console.error("Response:", responseData);
+        throw new Error(responseData.error || "Failed to save exam slots");
+      }
+
+      alert(`Exam slots created: ${responseData.created_slots}`);
+
+      setDate("");
+      setSections([]);
+      setPeriods([]);
+      setSelectedLabSubject(null);
+      onClose();
+    } catch (err) {
+      console.error("Save error:", err);
+      alert(`Save failed: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
-}
+
 
   function openSend(conflict) {
     setSendTarget(conflict);

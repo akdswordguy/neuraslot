@@ -5,6 +5,7 @@ from .views import *
 router = DefaultRouter()
 router.register(r'timetable', TimetableViewSet, basename='timetable')
 
+
 urlpatterns = [
     path('classes/', ClassListCreateView.as_view()),
     path('classes/<int:pk>/', ClassRetrieveUpdateDeleteView.as_view()),
@@ -17,6 +18,5 @@ urlpatterns = [
 
     path('activity/', ActivityListView.as_view()),
     path('exam/create/', ExamSlotCreateView.as_view(), name='exam_create'), 
-    path('request-booking/', request_slot_booking, name='request_slot_booking'),
     path('', include(router.urls)),
 ]

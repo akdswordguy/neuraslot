@@ -5,6 +5,5 @@ def log_activity(action, entity, description, user=None):
         action=action,
         entity=entity,
         description=description,
-        user=user if user and user.is_authenticated else None
+        user=user
     )
-    
