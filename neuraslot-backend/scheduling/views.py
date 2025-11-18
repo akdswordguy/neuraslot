@@ -1,10 +1,12 @@
-from rest_framework import generics
+from rest_framework import generics,status
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import Class, Subject, FacultyClassAssign, Timetable, Activity
-from .serializers import ClassSerializer, SubjectSerializer, FacultyClassSerializer, TimetableSerializer, ActivitySerializer
+from .models import Class, SlotBookingRequest, Subject, FacultyClassAssign, Timetable, Activity, ExamSlot
+from django.db import transaction
+from .serializers import ClassSerializer, ExamSlotCreateSerializer, SubjectSerializer, FacultyClassSerializer, TimetableSerializer, ActivitySerializer
 from .utils import log_activity
 
 
@@ -12,7 +14,6 @@ from .utils import log_activity
 class ClassListCreateView(generics.ListCreateAPIView):
     queryset = Class.objects.all()
     serializer_class = ClassSerializer
-
     def perform_create(self, serializer):
         obj = serializer.save()
         log_activity("CREATE", "Class", f"{obj.name} created", self.request.user)
@@ -128,3 +129,67 @@ class TimetableViewSet(ModelViewSet):
 class ActivityListView(generics.ListAPIView):
     queryset = Activity.objects.all().order_by('-timestamp')
     serializer_class = ActivitySerializer
+
+
+def get_class_id_from_section(section_name):
+    """Map section name to class ID"""
+    try:
+        cls = Class.objects.get(name=section_name)
+        return cls.id
+    except Class.DoesNotExist:
+        return None
+
+class ExamSlotCreateView(APIView):
+    def post(self, request):
+        serializer = ExamSlotCreateSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        exam_slots = serializer.validated_data.get("examSlots", [])
+        detected_conflicts = serializer.validated_data.get("detectedConflicts", [])
+
+        if not exam_slots:
+            return Response({"error": "No exam slots provided"}, status=400)
+
+        current_faculty = request.user
+        to_create = []
+        skipped = []
+        conflict_log = []
+
+        with transaction.atomic():
+            for slot in exam_slots:
+                class_id = get_class_id_from_section(slot["section"])
+
+                if not class_id:
+                    skipped.append(slot["section"])
+                    continue
+
+                exam_slot = ExamSlot(
+                    section=slot['section'],
+                    subject_id=slot['subject'],
+                    exam_date=slot['date'],
+                    day=slot['day'],
+                    period=slot['period'],
+                    klass_id=class_id,  # ✔ ForeignKey field name
+                    faculty=current_faculty,
+                    conflict=detected_conflicts
+                )
+
+
+                to_create.append(exam_slot)
+
+            if to_create:
+                ExamSlot.objects.bulk_create(to_create)
+
+        return Response(
+            {
+                "status": "success",
+                "created_slots": len(to_create),
+                "skipped_sections": skipped,
+                "conflicts_logged": len(detected_conflicts),
+            },
+            status=status.HTTP_201_CREATED
+        )
+    def get(self, request):
+        return Response({"message": "ExamSlot API available"}, status=200)

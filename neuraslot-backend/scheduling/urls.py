@@ -16,6 +16,6 @@ urlpatterns = [
     path('assign/<int:pk>/', FacultyClassAssignDetailView.as_view()),
 
     path('activity/', ActivityListView.as_view()),
-    
+    path('exam/create/', ExamSlotCreateView.as_view(), name='exam_create'), 
     path('', include(router.urls)),
 ]

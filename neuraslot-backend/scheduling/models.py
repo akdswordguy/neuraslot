@@ -3,8 +3,11 @@ from django.db import models
 from django.conf import settings
 
 from users.models import Member
+from django.contrib.postgres.fields import ArrayField
 
-User = settings.AUTH_USER_MODEL  # 'accounts.User'
+User = settings.AUTH_USER_MODEL
+
+
 
 class Class(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -104,23 +107,34 @@ EVENT_TYPES = (
 )
 
 
-class ScheduledEvent(models.Model):
-    klass = models.ForeignKey(Class, db_column='class_id', on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.RESTRICT)
-    faculty = models.ForeignKey(Member, db_column='faculty_id', on_delete=models.RESTRICT)
-    event_date = models.DateField()
-    period_number = models.PositiveSmallIntegerField()
-    event_type = models.CharField(max_length=30, choices=EVENT_TYPES)
-    original_timetable_slot = models.ForeignKey(Timetable, null=True, blank=True, on_delete=models.SET_NULL)
-    related_slot_booking_request = models.OneToOneField(SlotBookingRequest, null=True, blank=True, on_delete=models.SET_NULL)
-    exam_group_id = models.UUIDField(null=True, blank=True)
+
+class ExamSlot(models.Model):
+    section = models.CharField(max_length=50)
+    subject = models.ForeignKey(
+        Subject, on_delete=models.PROTECT, related_name="exam_slots"
+    )
+    exam_date = models.DateField()
+    day = models.CharField(max_length=20)  # Monday, Tuesday, etc
+    period = models.PositiveIntegerField()  # 1 - 8 only
+    class_id = models.ForeignKey(
+        Class, on_delete=models.CASCADE, db_column='class_id', related_name="exam_slots"
+    )
+    faculty = models.ForeignKey(
+        Member,
+        on_delete=models.PROTECT,
+        related_name="exam_slots"
+    )
+
+    conflict = models.JSONField(default=list, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "scheduledevent"
-        managed = False
-        unique_together = ('klass', 'event_date', 'period_number')
+        unique_together = ("class_id", "exam_date", "period")
+        ordering = ["exam_date", "period"]
+
+    def __str__(self):
+        return f"{self.subject.name} - {self.section} on {self.exam_date} P{self.period}"
+
 
 
 class Conflict(models.Model):

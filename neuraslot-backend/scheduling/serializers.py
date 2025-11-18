@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Class, Conflict, FacultyClassAssign, Notification, ScheduledEvent, SlotBookingRequest, Subject, Timetable, Activity
+from .models import Class, Conflict, FacultyClassAssign, Notification, SlotBookingRequest, Subject, Timetable, Activity, ExamSlot
 
 
 class ClassSerializer(serializers.ModelSerializer):
@@ -32,12 +32,6 @@ class SlotBookingRequestSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class ScheduledEventSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ScheduledEvent
-        fields = '__all__'
-
-
 class ConflictSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conflict
@@ -64,3 +58,19 @@ class ActivitySerializer(serializers.ModelSerializer):
         if obj.user:
             return obj.user.first_name or "User"
         return "System"
+    
+
+class ExamSlotSerializer(serializers.Serializer):
+    date = serializers.DateField()
+    section = serializers.CharField(max_length=50)
+    period = serializers.IntegerField(min_value=1, max_value=8)
+    day = serializers.CharField(max_length=20)
+    subject = serializers.IntegerField()
+
+class ExamSlotCreateSerializer(serializers.Serializer):
+    examSlots = ExamSlotSerializer(many=True)
+    detectedConflicts = serializers.ListField(
+        child=serializers.DictField(),
+        required=False,
+        allow_empty=True
+    )

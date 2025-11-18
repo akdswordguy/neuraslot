@@ -33,7 +33,6 @@ INSTALLED_APPS = [
     'corsheaders',
 
     # your apps
-    'accounts',
     'scheduling',
     'users',
 ]
@@ -48,6 +47,25 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+MIDDLEWARE.insert(0, "corsheaders.middleware.CorsMiddleware")
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+SESSION_COOKIE_SAMESITE = "None"
+SESSION_COOKIE_SECURE = False
+
+CSRF_COOKIE_SAMESITE = "None"
+CSRF_COOKIE_SECURE = False
 
 # CORS for your React frontend
 CORS_ALLOWED_ORIGINS = ['http://localhost:3000']
@@ -66,7 +84,7 @@ DATABASES = {
 APPEND_SLASH = False
 
 # Use your custom user model (we'll create it next)
-AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = "users.Member"
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
