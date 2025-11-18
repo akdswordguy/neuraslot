@@ -13,7 +13,8 @@ import {
   Home,
 } from "lucide-react";
 
-import AnimatedList from '../../AnimatedList';
+import AnimatedList from "../../AnimatedList_faculty";
+
 const FacultyDashboard = () => {
   const [selectedWeek, setSelectedWeek] = useState("current");
   const [user, setUser] = useState(null);
@@ -59,7 +60,7 @@ const FacultyDashboard = () => {
     },
   ]);
 
-  const [weeklyStats, setWeeklyStats] = useState([]); // ← you forgot this
+  const [weeklyStats, setWeeklyStats] = useState([]);
 
   // Grab user from localStorage
   useEffect(() => {
@@ -272,16 +273,18 @@ const FacultyDashboard = () => {
     fetchStats();
   }, []);
 
-
+  // ---------- FREE SLOTS ----------
   const [freeSlots, setFreeSlots] = useState([]);
   const [loadingSlots, setLoadingSlots] = useState(true);
 
   useEffect(() => {
     async function fetchFreeSlots() {
       try {
-        const res = await fetch("http://localhost:8000/api/scheduling/timetable/");
+        const res = await fetch(
+          "http://localhost:8000/api/scheduling/timetable/"
+        );
         const data = await res.json();
-        const free = data.filter(t => !t.subject);
+        const free = data.filter((t) => !t.subject);
         setFreeSlots(free);
       } catch (err) {
         console.error("Error fetching free slots:", err);
@@ -293,21 +296,97 @@ const FacultyDashboard = () => {
     fetchFreeSlots();
   }, []);
 
-  const handleBookSlot = async (slotId) => {
-    console.log("Booking slot:", slotId);
+  // ⭐ UPDATED: book slot with selected subject, update backend + UI
+  const handleBookSlot = async (slot) => {
+    if (!selectedSubject) {
+      alert("Please select a subject before booking.");
+      return;
+    }
+
+    if (!selectedClass) {
+      alert("Select class first.");
+      return;
+    }
+
+    const timingDate = new Date();
+    timingDate.setDate(
+      timingDate.getDate() + ((slot.day_of_week + 7 - currentDay) % 7)
+    );
+
+    const formattedDate = timingDate.toISOString().split("T")[0];
 
     try {
-      await fetch(`http://localhost:8000/api/scheduling/book/${slotId}/`, {
+      const res = await fetch("http://localhost:8000/api/scheduling/request-booking/", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          class_id: selectedClass,
+          subject_id: selectedSubject,
+          date: formattedDate,
+          period_number: slot.period_number
+        })
       });
-      alert("Slot booked!");
-    } catch {
-      alert("Booking failed. Your backend still needs a brain.");
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail);
+
+      alert("Booking request submitted! Waiting for admin approval.");
+      
+      // remove requested slot from list
+      setFreeSlots(prev => prev.filter(s => s.id !== slot.id));
+
+    } catch (err) {
+      console.error("Booking failed:", err);
+      alert(err.message);
     }
   };
 
 
 
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [activeSlot, setActiveSlot] = useState(null);
+
+  const handleOpenBooking = (slot) => {
+    setActiveSlot(slot);
+    setShowBookingModal(true);
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!activeSlot) return;
+    if (!selectedClass) return alert("Choose class first");
+    if (!selectedSubject) return alert("Choose subject first");
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/scheduling/timetable/${activeSlot.id}/`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            class_id: selectedClass,
+            subject_id: selectedSubject,
+            is_lab: true
+          })
+        }
+      );
+
+      if (!res.ok) throw new Error("Failed to update timetable");
+
+      alert("Slot booked successfully!");
+
+      setFreeSlots(prev => prev.filter(s => s.id !== activeSlot.id));
+      setShowBookingModal(false);
+      setActiveSlot(null);
+
+    } catch (err) {
+      console.error(err);
+      alert("Booking failed");
+    }
+  };
 
 
   const upcomingExams = [
@@ -344,6 +423,9 @@ const FacultyDashboard = () => {
       type: "success",
     },
   ];
+
+  
+
 
   return (
     <div
@@ -550,55 +632,48 @@ const FacultyDashboard = () => {
             )}
           </div>
         </div>
-        {/* Availability Management - REAL DATA */}
-        <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
 
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Available Slots
-          </h3>
+          <div className="bg-white/70 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 shadow-xl">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+              Available Slots
+            </h3>
 
-          {loadingSlots ? (
-            <p className="text-gray-500 dark:text-gray-400">Loading free slots...</p>
-          ) : freeSlots.length === 0 ? (
-            <p className="text-gray-500 dark:text-gray-400">No free slots found.</p>
-          ) : (
-            <div className="space-y-4">
-              <AnimatedList
-                  items={freeSlots.map((slot, index) => {
-                  const timing = PERIOD_TIMINGS[slot.period_number - 1];
-
-                  return (
-                    <div
-                      key={index}
-                      className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 shadow hover:shadow-lg transition-all"
-                    >
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-semibold text-gray-900 dark:text-white">
-                            Day: {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][slot.day_of_week - 1]}
-                          </p>
-                          <p className="text-gray-600 dark:text-gray-400 text-sm">
-                            Period {slot.period_number} • {timing?.start} - {timing?.end}
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={() => handleBookSlot(slot.id)}
-                          className="px-3 py-1 bg-gradient-to-r from-blue-400 to-purple-400 
-                            text-white rounded-xl font-semibold text-xs hover:scale-105 
-                            transition-all"
-                        >
-                          Book
-                        </button>
+            {loadingSlots ? (
+              <p className="text-gray-500 dark:text-gray-400">Loading free slots...</p>
+            ) : freeSlots.length === 0 ? (
+              <p className="text-gray-500 dark:text-gray-400">No free slots found.</p>
+            ) : (
+            <AnimatedList
+              items={freeSlots}
+              renderItem={(slot) => {
+                const timing = PERIOD_TIMINGS[slot.period_number - 1];
+                return (
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800 shadow hover:shadow-lg transition-all">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-semibold text-gray-900 dark:text-white">
+                          {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][slot.day_of_week - 1]}
+                        </p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">
+                          Period {slot.period_number} • {timing.start} - {timing.end}
+                        </p>
                       </div>
-                    </div>
-                  );
-                })}
-              />
 
-            </div>
-          )}
-        </div>
+                      <button
+                        onClick={() => handleOpenBooking(slot)}
+                        className="px-3 py-1 bg-gradient-to-r from-blue-400 to-purple-400 text-white rounded-xl font-semibold text-xs hover:scale-105 transition-all"
+                      >
+                        Book
+                      </button>
+                    </div>
+                  </div>
+                );
+              }}
+            />
+
+            )}
+          </div>
+
       </div>
 
       {/* Upcoming exams + notifications */}
@@ -640,6 +715,63 @@ const FacultyDashboard = () => {
           </div>
         </div>
       </div>
+      {showBookingModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-[350px] shadow-2xl border border-gray-300 dark:border-gray-700 animate-scaleIn">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+              Confirm Slot Booking
+            </h3>
+
+            <div className="mb-4">
+              <label className="text-sm font-semibold">Select Class</label>
+              <select
+                className="w-full mt-1 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700"
+                value={selectedClass || ""}
+                onChange={(e) => setSelectedClass(Number(e.target.value))}
+              >
+                <option value="">Select</option>
+                {classes.map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mb-6">
+              <label className="text-sm font-semibold">Select Subject</label>
+              <select
+                className="w-full mt-1 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700"
+                value={selectedSubject || ""}
+                onChange={(e) => setSelectedSubject(Number(e.target.value))}
+              >
+                <option value="">Select</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowBookingModal(false);
+                  setActiveSlot(null);
+                }}
+                className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleConfirmBooking}
+                className="px-4 py-2 rounded-lg bg-gradient-to-r from-blue-400 to-purple-500 text-white font-semibold"
+              >
+                Book Slot
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

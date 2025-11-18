@@ -69,88 +69,39 @@ class Timetable(models.Model):
         unique_together = ('klass', 'day_of_week', 'period_number')
 
 
-# Booking types and status as simple strings with choices:
-BOOKING_TYPES = (
-    ('LAB_THEORY', 'Lab Theory'),
-    ('EXAM', 'Exam'),
-)
-
-REQUEST_STATUS = (
-    ('PENDING', 'Pending'),
-    ('APPROVED', 'Approved'),
-    ('REJECTED', 'Rejected'),
-    ('CANCELLED', 'Cancelled'),
-)
 
 
-class SlotBookingRequest(models.Model):
-    faculty = models.ForeignKey(Member, db_column='faculty_id', on_delete=models.CASCADE)
-    klass = models.ForeignKey(Class, db_column='class_id', on_delete=models.CASCADE)
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    requested_date = models.DateField()
-    requested_period = models.PositiveSmallIntegerField()
-    booking_type = models.CharField(max_length=20, choices=BOOKING_TYPES)
-    status = models.CharField(max_length=20, choices=REQUEST_STATUS, default='PENDING')
-    admin_notes = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = "slotbookingrequest"
-        managed = False
-
-
-EVENT_TYPES = (
-    ('LAB_THEORY', 'Lab Theory'),
-    ('LAB_EXAM', 'Lab Exam'),
-    ('DISPLACED_LAB_THEORY', 'Displaced Lab Theory'),
-)
-
-
+from django.db import models
+from scheduling.models import Class, Subject  # Adjust imports if needed
 
 class ExamSlot(models.Model):
     section = models.CharField(max_length=50)
-    subject = models.ForeignKey(
-        Subject, on_delete=models.PROTECT, related_name="exam_slots"
-    )
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     exam_date = models.DateField()
-    day = models.CharField(max_length=20)  # Monday, Tuesday, etc
-    period = models.PositiveIntegerField()  # 1 - 8 only
-    class_id = models.ForeignKey(
-        Class, on_delete=models.CASCADE, db_column='class_id', related_name="exam_slots"
-    )
-    faculty = models.ForeignKey(
-        Member,
-        on_delete=models.PROTECT,
-        related_name="exam_slots"
-    )
-
-    conflict = models.JSONField(default=list, blank=True)
+    day = models.CharField(max_length=20)
+    period = models.PositiveSmallIntegerField()
+    conflict = models.JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("class_id", "exam_date", "period")
-        ordering = ["exam_date", "period"]
+        db_table = "examslot"
 
     def __str__(self):
-        return f"{self.subject.name} - {self.section} on {self.exam_date} P{self.period}"
-
+        return f"{self.section} - {self.subject.name} ({self.exam_date})"
 
 
 class Conflict(models.Model):
-    exam_group_id = models.UUIDField()
-    conflicting_class = models.ForeignKey(Class, db_column='conflicting_class_id', on_delete=models.CASCADE)
-    conflicting_subject = models.ForeignKey(Subject, db_column='conflicting_subject_id', on_delete=models.CASCADE)
+    conflicting_class = models.ForeignKey(Class, on_delete=models.CASCADE)
+    conflicting_subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     conflicting_period = models.PositiveSmallIntegerField()
     conflicting_date = models.DateField()
-    suggested_reschedule_date = models.DateField(null=True, blank=True)
-    suggested_reschedule_period = models.PositiveSmallIntegerField(null=True, blank=True)
-    is_resolved = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         db_table = "conflict"
-        managed = False
+
+    def __str__(self):
+        return f"Class {self.conflicting_class} Subject {self.conflicting_subject}"
 
 
 class Notification(models.Model):

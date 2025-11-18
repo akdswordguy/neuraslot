@@ -12,7 +12,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import AnimatedList from '../../AnimatedList';
+import AnimatedList from '../../AnimatedList_admin';
 
 const ExamSlotCreator = dynamic(() => import('../../../components/ExamSlotCreator'), { ssr: false });
 const ScheduleEditor = dynamic(() => import('../../../components/ScheduleEditor'), { ssr: false });
