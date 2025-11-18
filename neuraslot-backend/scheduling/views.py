@@ -146,6 +146,57 @@ class ExamSlotCreateView(APIView):
         serializer = ExamSlotCreateSerializer(data=request.data)
 
         if not serializer.is_valid():
+            return Response(serializer.errors, status=400)
+
+        exam_slots = serializer.validated_data.get("examSlots", [])
+        detected_conflicts = serializer.validated_data.get("detectedConflicts", [])
+
+        if not exam_slots:
+            return Response({"error": "No exam slots provided"}, status=400)
+
+        current_faculty = request.user if request.user.is_authenticated else None
+        to_create = []
+        skipped_sections = []
+
+        with transaction.atomic():
+            for slot in exam_slots:
+                try:
+                    exam_date = datetime.strptime(slot["date"], "%Y-%m-%d").date()
+                except:
+                    skipped_sections.append(slot["section"])
+                    continue
+
+                exam_slot = ExamSlot(
+                    section=slot["section"],
+                    subject_id=slot["subject"],
+                    exam_date=exam_date,
+                    day=slot["day"],
+                    period=slot["period"],
+                    conflict=detected_conflicts or None,
+                )
+                to_create.append(exam_slot)
+
+            if to_create:
+                ExamSlot.objects.bulk_create(to_create)
+
+        log_activity(
+            action="CREATE",
+            entity="ExamSlot",
+            description=f"{len(to_create)} exam slots added",
+            user=current_faculty
+        )
+
+        return Response({
+            "status": "success",
+            "created_slots": len(to_create),
+            "skipped_sections": skipped_sections,
+            "conflicts_logged": len(detected_conflicts)
+        }, status=201)
+
+    def post(self, request):
+        serializer = ExamSlotCreateSerializer(data=request.data)
+
+        if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         exam_slots = serializer.validated_data.get("examSlots", [])

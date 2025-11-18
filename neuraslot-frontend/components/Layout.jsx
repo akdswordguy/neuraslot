@@ -25,17 +25,8 @@ const Layout = ({ children, currentUser, onLogout }) => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  const notifications = [
-    { id: 1, message: 'New schedule generated', time: '5 mins ago', unread: true },
-    { id: 2, message: 'Lab-A capacity updated', time: '1 hour ago', unread: true },
-    { id: 3, message: 'Exam slots confirmed', time: '2 hours ago', unread: false }
-  ];
 
-  const userInfo = {
-    admin: { name: 'Admin User', email: 'admin@neuraslot.edu', avatar: '👤' },
-    faculty: { name: 'Dr. Smith', email: 'smith@neuraslot.edu', avatar: '👨‍🏫' },
-    
-  };
+
 
   const navLinks = {
     admin: [

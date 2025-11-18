@@ -12,7 +12,7 @@ import {
   TrendingUp,
   Home,
 } from "lucide-react";
-
+import Layout from "../../../components/Layout";
 import AnimatedList from "../../AnimatedList_faculty";
 
 const FacultyDashboard = () => {
@@ -518,7 +518,15 @@ const FacultyDashboard = () => {
             {todaySchedule.map((session, idx) => (
               <div
                 key={idx}
-                className="group relative bg-gradient-to-r from-rose-50 via-pink-50 to-purple-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 p-6 rounded-2xl border-l-4 border-rose-500 transition-all"
+                className={`
+                  group relative p-6 rounded-2xl border-l-4 transition-all 
+                  ${session.status === "ongoing"
+                    ? "bg-green-50 dark:bg-green-900/20 border-green-500"
+                    : session.status === "completed"
+                      ? "bg-gray-100 dark:bg-gray-800 border-gray-500"
+                      : "bg-red-50 dark:bg-red-900/20 border-red-500"
+                  }
+                `}
               >
                 <div className="flex items-center justify-between">
                   <div>
@@ -526,7 +534,7 @@ const FacultyDashboard = () => {
                       {session.time}
                     </p>
                     <p className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                      {session.subject || "No Subject"}
+                      {subjectLookup[session.subject_id] || subjectLookup[session.subject] || "No Subject"}
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {session.lab} • Period {session.period_number}
